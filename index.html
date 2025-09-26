@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karnataka KSRTC Online Bus Ticket Booking</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Karnataka KSRTC Online Bus Ticket Booking</h1>
+            <nav>
+                <a href="#home">Home</a>
+                <a href="#booking">Book Ticket</a>
+                <a href="#about">About</a>
+                <button id="darkModeToggle" class="btn-secondary" title="Toggle Dark Mode">Dark Mode</button>
+                <button id="viewBookingsBtn" class="btn-secondary" title="View My Bookings">My Bookings</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <h2>Welcome to Karnataka KSRTC Online Booking</h2>
+                <p>Book your bus tickets online with ease and convenience</p>
+                <a href="index.html"><button onclick="showBookingForm()" class="btn-primary">Book Now</button></a> 
+            </div>
+        </section>
+
+        <section id="booking" class="booking-section">
+            <div class="container">
+                <h2>Book Your Karnataka Bus Ticket</h2>
+                <form id="bookingForm" onsubmit="handleBooking(event)">
+                    <div class="form-group">
+                        <label for="busNumber">Bus Number:</label>
+                        <input type="text" id="busNumber" required placeholder="Enter Bus Number (e.g., KA-01-A-1234)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fromPlace">From:</label>
+                        <select id="fromPlace" required>
+                            <option value="">Select Starting Point</option>
+                            <!-- Karnataka Places -->
+                            <optgroup label="Karnataka">
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Mysore">Mysore</option>
+                                <option value="Mangalore">Mangalore</option>
+                                <option value="Hubli">Hubli</option>
+                                <option value="Belgaum">Belgaum</option>
+                                <option value="Davangere">Davangere</option>
+                                <option value="Bellary">Bellary</option>
+                                <option value="Gulbarga">Gulbarga</option>
+                                <option value="Bijapur">Bijapur</option>
+                                <option value="Shimoga">Shimoga</option>
+                                <option value="Tumkur">Tumkur</option>
+                                <option value="Raichur">Raichur</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="toPlace">To:</label>
+                        <select id="toPlace" required>
+                            <option value="">Select Destination</option>
+                            <!-- Karnataka Places -->
+                            <optgroup label="Karnataka">
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Mysore">Mysore</option>
+                                <option value="Mangalore">Mangalore</option>
+                                <option value="Hubli">Hubli</option>
+                                <option value="Belgaum">Belgaum</option>
+                                <option value="Davangere">Davangere</option>
+                                <option value="Bellary">Bellary</option>
+                                <option value="Gulbarga">Gulbarga</option>
+                                <option value="Bijapur">Bijapur</option>
+                                <option value="Shimoga">Shimoga</option>
+                                <option value="Tumkur">Tumkur</option>
+                                <option value="Raichur">Raichur</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="travelDate">Travel Date:</label>
+                        <input type="date" id="travelDate" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="passengerName">Passenger Name:</label>
+                        <input type="text" id="passengerName" required placeholder="Enter Full Name" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mobileNumber">Mobile Number:</label>
+                        <input type="tel" id="mobileNumber" required placeholder="Enter Mobile Number" />
+                    </div>
+
+                    <button type="submit" class="btn-primary">Proceed to Payment</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="payment" class="payment-section" style="display: none;">
+            <div class="container">
+                <h2>Payment Details</h2>
+                <div id="paymentForm">
+                    <div class="form-group">
+                        <label for="paymentMethod">Payment Method:</label>
+                        <select id="paymentMethod" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="card">Credit/Debit Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="netbanking">Net Banking</option>
+                            <option value="wallet">Digital Wallet</option>
+                        </select>
+                    </div>
+
+                    <div id="qrCodeSection" style="display: none;">
+                        <h3>Scan QR Code for Payment</h3>
+                        <div id="qrCode"></div>
+                        <p>Payment Reference: <span id="paymentRef"></span></p>
+                        <p>Total Amount: <span id="paymentAmount"></span></p>
+                    </div>
+
+                    <button onclick="processPayment()" class="btn-primary">Make Payment</button>
+                    <button onclick="backToBooking()" class="btn-secondary">Back</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="ticket" class="ticket-section" style="display: none;">
+            <div class="container">
+                <h2>Your Karnataka Bus Ticket</h2>
+                <div id="ticketDetails" class="ticket">
+                    <div class="ticket-header">
+                        <h3>Karnataka KSRTC Bus Ticket</h3>
+                        <div class="ticket-number">Ticket #: <span id="ticketNumber"></span></div>
+                    </div>
+                    <div class="ticket-body">
+                        <div class="ticket-row">
+                            <span class="label">Bus Number:</span>
+                            <span id="ticketBusNumber"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">From:</span>
+                            <span id="ticketFrom"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">To:</span>
+                            <span id="ticketTo"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">Date:</span>
+                            <span id="ticketDate"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">Passenger:</span>
+                            <span id="ticketPassenger"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">Payment Method:</span>
+                            <span id="ticketPaymentMethod"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">Amount Paid:</span>
+                            <span id="ticketAmount"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">Payment Ref:</span>
+                            <span id="ticketPaymentRef"></span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="label">QR Code:</span>
+                            <div id="ticketQRCode"></div>
+                        </div>
+                    </div>
+                    <div class="ticket-footer">
+                        <button onclick="downloadTicket()" class="btn-primary">Download Ticket</button>
+                        <button onclick="printTicket()" class="btn-secondary">Print Ticket</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Section: View Bookings -->
+        <section id="viewBookings" class="booking-section" style="display: none;">
+            <div class="container">
+                <h2>My Bookings</h2>
+                <div id="bookingsList">
+                    <!-- Bookings will be dynamically inserted here -->
+                </div>
+                <button onclick="closeViewBookings()" class="btn-secondary">Close</button>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="container">
+                <h2>About KSRTC Online Booking</h2>
+                <p>
+                    KSRTC Online Bus Ticket Booking System allows you to book bus tickets easily and securely from the comfort of your home.
+                    Enjoy hassle-free travel planning with our user-friendly interface and secure payment options.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 KSRTC Online Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Payment Confirmation Modal -->
+    <div id="paymentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <h2>Payment Successful</h2>
+            <p>Your payment has been processed successfully. Your ticket is ready.</p>
+            <button onclick="goToTicket()" class="btn-primary">View Ticket</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
