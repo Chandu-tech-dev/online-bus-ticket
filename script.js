@@ -4,6 +4,8 @@ class KSRTCBookingSystem {
         this.bookingData = null;
         this.paymentReference = null;
         this.paymentMethod = null;
+        this.scanning = false;
+        this.videoStream = null;
         this.initializeEventListeners();
         this.initDarkMode();
         this.initViewBookings();
@@ -14,6 +16,12 @@ class KSRTCBookingSystem {
         // Set minimum date for travel date
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('travelDate').setAttribute('min', today);
+
+        // QR code scanning event listeners
+        const scanBtn = document.getElementById('scanQRCodeBtn');
+        const closeScannerBtn = document.getElementById('closeScannerBtn');
+        scanBtn.addEventListener('click', () => this.startQRScanner());
+        closeScannerBtn.addEventListener('click', () => this.stopQRScanner());
     }
 
     initDarkMode() {
@@ -463,6 +471,100 @@ class KSRTCBookingSystem {
                 <hr />
             `;
             bookingsList.appendChild(ticketDiv);
+        });
+    }
+
+    startQRScanner() {
+        const qrScannerDiv = document.getElementById('qrScanner');
+        const video = document.getElementById('qrVideo');
+
+        if (this.scanning) return;
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                this.videoStream = stream;
+                video.srcObject = stream;
+                video.play();
+                qrScannerDiv.style.display = 'block';
+                this.scanning = true;
+                this.scanQRCode();
+            })
+            .catch(err => {
+                console.error('Error accessing camera:', err);
+                alert('Unable to access camera. Please ensure camera permissions are granted.');
+            });
+    }
+
+    stopQRScanner() {
+        const qrScannerDiv = document.getElementById('qrScanner');
+
+        if (this.videoStream) {
+            this.videoStream.getTracks().forEach(track => track.stop());
+            this.videoStream = null;
+        }
+
+        qrScannerDiv.style.display = 'none';
+        this.scanning = false;
+    }
+
+    scanQRCode() {
+        if (!this.scanning) return;
+
+        const video = document.getElementById('qrVideo');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+            this.handleQRCodeData(code.data);
+            this.stopQRScanner();
+        } else {
+            requestAnimationFrame(() => this.scanQRCode());
+        }
+    }
+
+    handleQRCodeData(data) {
+        try {
+            const qrData = JSON.parse(data);
+
+            // Assuming QR code contains busNumber and fromPlace
+            if (qrData.busNumber && qrData.fromPlace) {
+                document.getElementById('busNumber').value = qrData.busNumber;
+                document.getElementById('fromPlace').value = qrData.fromPlace;
+
+                // Update toPlace options based on fromPlace
+                this.updateToPlaceOptions(qrData.fromPlace);
+
+                alert('QR Code scanned successfully! Bus number and start point have been filled.');
+            } else {
+                alert('Invalid QR code data. Please scan a valid bus QR code.');
+            }
+        } catch (e) {
+            alert('Invalid QR code format. Please scan a valid bus QR code.');
+        }
+    }
+
+    updateToPlaceOptions(fromPlace) {
+        const toPlaceSelect = document.getElementById('toPlace');
+        const allPlaces = ['Bangalore', 'Mysore', 'Mangalore', 'Hubli', 'Belgaum', 'Davangere', 'Bellary', 'Gulbarga', 'Bijapur', 'Shimoga', 'Tumkur', 'Raichur'];
+
+        // Clear existing options except the first one
+        toPlaceSelect.innerHTML = '<option value="">Select Destination</option>';
+
+        // Add options excluding the fromPlace
+        allPlaces.forEach(place => {
+            if (place !== fromPlace) {
+                const option = document.createElement('option');
+                option.value = place;
+                option.textContent = place;
+                toPlaceSelect.appendChild(option);
+            }
         });
     }
 }

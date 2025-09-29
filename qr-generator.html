@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KSRTC Bus QR Code Generator</title>
+    <link rel="stylesheet" href="qr-generator.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>KSRTC Bus QR Code Generator</h1>
+            <nav>
+                <a href="index.html">Back to Booking</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="qr-generator">
+            <div class="container">
+                <h2>Generate Test QR Codes for Bus Scanning</h2>
+                <p>Use these QR codes to test the QR scanning functionality in the booking form. Each QR code contains bus number and starting point information.</p>
+
+                <button onclick="generateQRCodes()" class="generate-btn">Generate QR Codes</button>
+
+                <div class="qr-grid" id="qrGrid">
+                    <!-- QR codes will be generated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="qr-generator.js"></script>
+</body>
+</html>

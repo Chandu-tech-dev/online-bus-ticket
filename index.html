@@ -34,9 +34,18 @@
             <div class="container">
                 <h2>Book Your Karnataka Bus Ticket</h2>
                 <form id="bookingForm" onsubmit="handleBooking(event)">
-                    <div class="form-group">
+                    <div class="form-group qr-scanner-group">
                         <label for="busNumber">Bus Number:</label>
                         <input type="text" id="busNumber" required placeholder="Enter Bus Number (e.g., KA-01-A-1234)" />
+                        <button type="button" id="scanQRCodeBtn">Scan QR</button>
+                        <div id="qrScanner">
+                            <div class="qr-scanner-content">
+                                <h3>Scan Bus QR Code</h3>
+                                <p>Point your camera at the bus QR code to auto-fill details</p>
+                                <video id="qrVideo"></video>
+                                <button type="button" id="closeScannerBtn">×</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -223,6 +232,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
