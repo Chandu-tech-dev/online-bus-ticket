@@ -19,8 +19,10 @@ class KSRTCBookingSystem {
 
         // QR code scanning event listeners
         const scanBtn = document.getElementById('scanQRCodeBtn');
+        const scanNowBtn = document.getElementById('scanNowBtn');
         const closeScannerBtn = document.getElementById('closeScannerBtn');
         scanBtn.addEventListener('click', () => this.startQRScanner());
+        scanNowBtn.addEventListener('click', () => this.performScan());
         closeScannerBtn.addEventListener('click', () => this.stopQRScanner());
     }
 
@@ -82,7 +84,7 @@ class KSRTCBookingSystem {
     handleBooking(event) {
         event.preventDefault();
 
-        // Show loading
+       
         this.showLoading('Validating booking details...');
 
         setTimeout(() => {
@@ -95,13 +97,12 @@ class KSRTCBookingSystem {
             const passengerName = document.getElementById('passengerName').value;
             const mobileNumber = document.getElementById('mobileNumber').value;
 
-            // Validate that from and to places are different
+           
             if (fromPlace === toPlace) {
                 alert('From and To places cannot be the same!');
                 return;
             }
 
-            // Store booking data
             this.bookingData = {
                 busNumber,
                 fromPlace,
@@ -487,7 +488,6 @@ class KSRTCBookingSystem {
                 video.play();
                 qrScannerDiv.style.display = 'block';
                 this.scanning = true;
-                this.scanQRCode();
             })
             .catch(err => {
                 console.error('Error accessing camera:', err);
@@ -505,6 +505,28 @@ class KSRTCBookingSystem {
 
         qrScannerDiv.style.display = 'none';
         this.scanning = false;
+    }
+
+    performScan() {
+        if (!this.scanning) return;
+
+        const video = document.getElementById('qrVideo');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+            this.handleQRCodeData(code.data);
+            this.stopQRScanner();
+        } else {
+            alert('No QR code detected. Please try again.');
+        }
     }
 
     scanQRCode() {

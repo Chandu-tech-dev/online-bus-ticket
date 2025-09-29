@@ -41,9 +41,12 @@
                         <div id="qrScanner">
                             <div class="qr-scanner-content">
                                 <h3>Scan Bus QR Code</h3>
-                                <p>Point your camera at the bus QR code to auto-fill details</p>
+                                <p>Point your camera at the bus QR code and click "Scan Now" to fill details</p>
                                 <video id="qrVideo"></video>
-                                <button type="button" id="closeScannerBtn">×</button>
+                                <div class="scanner-controls">
+                                    <button type="button" id="scanNowBtn" class="scan-now-btn">Scan Now</button>
+                                    <button type="button" id="closeScannerBtn">×</button>
+                                </div>
                             </div>
                         </div>
                     </div>
