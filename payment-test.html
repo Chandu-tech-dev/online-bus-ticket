@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Gateway Test - KSRTC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .gateway-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .gateway-btn:hover {
+            background: #45a049;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>Payment Gateway Integration Test</h1>
+    <p>Test the payment gateway integrations for your KSRTC booking system.</p>
+
+    <div class="test-section">
+        <h2>Test Payment Gateways</h2>
+        <p>Click any button below to test the payment integration. Use test credentials:</p>
+
+        <button class="gateway-btn" onclick="testRazorpay()">Test Razorpay</button>
+        <button class="gateway-btn" onclick="testStripe()">Test Stripe</button>
+        <button class="gateway-btn" onclick="testPayPal()">Test PayPal</button>
+        <button class="gateway-btn" onclick="testPaytm()">Test Paytm</button>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Credentials</h2>
+        <h3>Razorpay:</h3>
+        <ul>
+            <li>Key ID: Use test key from dashboard</li>
+            <li>Test Card: 4111 1111 1111 1111</li>
+            <li>CVV: Any 3 digits</li>
+            <li>Expiry: Any future date</li>
+        </ul>
+
+        <h3>Stripe:</h3>
+        <ul>
+            <li>Publishable Key: Use test key from dashboard</li>
+            <li>Test Card: 4242 4242 4242 4242</li>
+            <li>CVV: Any 3 digits</li>
+            <li>Expiry: Any future date</li>
+        </ul>
+
+        <h3>PayPal:</h3>
+        <ul>
+            <li>Use PayPal Sandbox account</li>
+            <li>Create test buyer/seller accounts</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Integration Status</h2>
+        <div id="integrationStatus">
+            <p><strong>Razorpay:</strong> <span id="razorpayStatus">Not Configured</span></p>
+            <p><strong>Stripe:</strong> <span id="stripeStatus">Not Configured</span></p>
+            <p><strong>PayPal:</strong> <span id="paypalStatus">Not Configured</span></p>
+            <p><strong>Paytm:</strong> <span id="paytmStatus">Not Configured</span></p>
+        </div>
+    </div>
+
+    <!-- Payment Gateway SDKs -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AZDxjDScFpQtjWTOUtWKbyN_bDt4OgqaF4eYXlewfBP4-8aqX3PiV8e1GWU6liB2CUXlkA59kJXE7M6R&currency=INR"></script>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function testRazorpay() {
+            if (typeof Razorpay === 'undefined') {
+                showStatus('Razorpay SDK not loaded. Check your internet connection.', 'error');
+                return;
+            }
+
+            const options = {
+                key: 'rzp_test_YOUR_TEST_KEY', // Replace with your test key
+                amount: 100, // Amount in paisa (₹1)
+                currency: 'INR',
+                name: 'KSRTC Test Payment',
+                description: 'Test payment for KSRTC booking system',
+                handler: function(response) {
+                    showStatus('Razorpay payment successful! Payment ID: ' + response.razorpay_payment_id, 'success');
+                },
+                prefill: {
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    contact: '9999999999'
+                },
+                theme: {
+                    color: '#4CAF50'
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        }
+
+        function testStripe() {
+            if (typeof Stripe === 'undefined') {
+                showStatus('Stripe SDK not loaded. Check your internet connection.', 'error');
+                return;
+            }
+
+            showStatus('Stripe integration requires server-side setup. Please check the integration guide.', 'warning');
+        }
+
+        function testPayPal() {
+            if (typeof paypal === 'undefined') {
+                showStatus('PayPal SDK not loaded. Check your internet connection.', 'error');
+                return;
+            }
+
+            showStatus('PayPal buttons will be rendered in the main application. This is just a test page.', 'warning');
+        }
+
+        function testPaytm() {
+            showStatus('Paytm integration requires merchant setup. Please check the integration guide.', 'warning');
+        }
+
+        // Check SDK loading status
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('razorpayStatus').textContent =
+                    typeof Razorpay !== 'undefined' ? 'SDK Loaded' : 'SDK Failed to Load';
+
+                document.getElementById('stripeStatus').textContent =
+                    typeof Stripe !== 'undefined' ? 'SDK Loaded' : 'SDK Failed to Load';
+
+                document.getElementById('paypalStatus').textContent =
+                    typeof paypal !== 'undefined' ? 'SDK Loaded' : 'SDK Failed to Load';
+
+                document.getElementById('paytmStatus').textContent = 'Requires Configuration';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

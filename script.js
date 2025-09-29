@@ -266,16 +266,193 @@ class KSRTCBookingSystem {
         }
 
         this.paymentMethod = paymentMethod;
+        const amount = this.calculateFare();
 
-        // Simulate payment processing
+        // Route to appropriate payment gateway
+        switch(paymentMethod) {
+            case 'razorpay':
+                this.processRazorpayPayment(amount);
+                break;
+            case 'stripe':
+                this.processStripePayment(amount);
+                break;
+            case 'paypal':
+                this.processPayPalPayment(amount);
+                break;
+            case 'paytm':
+                this.processPaytmPayment(amount);
+                break;
+            case 'phonepe':
+                this.processUPIPayment('PhonePe', amount);
+                break;
+            case 'googlepay':
+                this.processUPIPayment('Google Pay', amount);
+                break;
+            case 'card':
+            case 'upi':
+            case 'netbanking':
+            case 'wallet':
+                // For demo purposes, simulate payment
+                this.simulatePayment(amount);
+                break;
+            default:
+                alert('Payment method not supported yet!');
+        }
+    }
+
+    // Razorpay Integration
+    processRazorpayPayment(amount) {
+        const options = {
+            key: 'YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay Key ID
+            amount: amount * 100, // Amount in paisa
+            currency: 'INR',
+            name: 'KSRTC Online Booking',
+            description: `Bus Ticket - ${this.bookingData.busNumber}`,
+            order_id: this.paymentReference,
+            handler: (response) => {
+                this.handlePaymentSuccess(response, 'Razorpay');
+            },
+            prefill: {
+                name: this.bookingData.passengerName,
+                email: '',
+                contact: this.bookingData.mobileNumber
+            },
+            theme: {
+                color: '#4CAF50'
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    }
+
+    // Stripe Integration
+    processStripePayment(amount) {
+        // Initialize Stripe
+        const stripe = Stripe('YOUR_STRIPE_PUBLISHABLE_KEY'); // Replace with your Stripe key
+
+        fetch('/create-payment-intent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                amount: amount * 100, // Amount in cents
+                currency: 'inr',
+                payment_reference: this.paymentReference
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            return stripe.confirmCardPayment(data.clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: this.bookingData.passengerName,
+                    },
+                }
+            });
+        })
+        .then(result => {
+            if (result.error) {
+                alert('Payment failed: ' + result.error.message);
+            } else {
+                this.handlePaymentSuccess(result.paymentIntent, 'Stripe');
+            }
+        });
+    }
+
+    // PayPal Integration
+    processPayPalPayment(amount) {
+        paypal.Buttons({
+            createOrder: (data, actions) => {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: amount.toString(),
+                            currency_code: 'INR'
+                        },
+                        reference_id: this.paymentReference
+                    }]
+                });
+            },
+            onApprove: (data, actions) => {
+                return actions.order.capture().then(details => {
+                    this.handlePaymentSuccess(details, 'PayPal');
+                });
+            },
+            onError: (err) => {
+                alert('PayPal payment failed. Please try again.');
+            }
+        }).render('#paypal-button-container');
+    }
+
+    // Paytm Integration
+    processPaytmPayment(amount) {
+        const paytmConfig = {
+            root: "",
+            flow: "DEFAULT",
+            data: {
+                orderId: this.paymentReference,
+                token: "YOUR_PAYTM_TOKEN", // Get from Paytm
+                tokenType: "TXN_TOKEN",
+                amount: amount.toString(),
+                mid: "YOUR_PAYTM_MID", // Your Paytm Merchant ID
+                redirectUrl: window.location.origin + "/payment-success"
+            },
+            handler: {
+                notifyMerchant: (eventName, data) => {
+                    if (eventName === 'APP_CLOSED') {
+                        alert('Payment cancelled by user');
+                    }
+                }
+            }
+        };
+
+        if (window.Paytm && window.Paytm.CheckoutJS) {
+            window.Paytm.CheckoutJS.init(paytmConfig).then(() => {
+                window.Paytm.CheckoutJS.invoke();
+            });
+        } else {
+            alert('Paytm SDK not loaded. Please try another payment method.');
+        }
+    }
+
+    // Simulate payment for demo
+    simulatePayment(amount) {
         this.showLoading('Processing payment...');
 
         setTimeout(() => {
             this.hideLoading();
-            // Show payment confirmation modal instead of alert
             const modal = document.getElementById('paymentModal');
             modal.style.display = 'block';
         }, 2000);
+    }
+
+    // Handle UPI payments like PhonePe and Google Pay via UPI deep links or QR code
+    processUPIPayment(appName, amount) {
+        // For demo, show alert and simulate payment
+        alert(`Redirecting to ${appName} for UPI payment of ₹${amount}. This is a simulation.`);
+
+        // In real app, generate UPI deep link or QR code here
+
+        this.simulatePayment(amount);
+    }
+
+    // Handle successful payment
+    handlePaymentSuccess(paymentResponse, gateway) {
+        console.log('Payment successful:', paymentResponse);
+
+        // Store payment details
+        this.paymentDetails = {
+            gateway: gateway,
+            response: paymentResponse,
+            timestamp: new Date().toISOString()
+        };
+
+        // Show success modal
+        const modal = document.getElementById('paymentModal');
+        modal.style.display = 'block';
     }
 
     generateTicket() {

@@ -42,7 +42,13 @@
                             <div class="qr-scanner-content">
                                 <h3>Scan Bus QR Code</h3>
                                 <p>Point your camera at the bus QR code and click "Scan Now" to fill details</p>
-                                <video id="qrVideo"></video>
+                                <div class="scanner-instructions">
+                                    <strong>Instructions:</strong> Position the QR code within the scanning area. Ensure good lighting and hold steady for best results.
+                                </div>
+                                <div class="qr-video-container">
+                                    <video id="qrVideo" autoplay playsinline></video>
+                                    <div class="qr-overlay"></div>
+                                </div>
                                 <div class="scanner-controls">
                                     <button type="button" id="scanNowBtn" class="scan-now-btn">Scan Now</button>
                                     <button type="button" id="closeScannerBtn">×</button>
@@ -123,10 +129,20 @@
                         <label for="paymentMethod">Payment Method:</label>
                         <select id="paymentMethod" required>
                             <option value="">Select Payment Method</option>
-                            <option value="card">Credit/Debit Card</option>
-                            <option value="upi">UPI</option>
-                            <option value="netbanking">Net Banking</option>
-                            <option value="wallet">Digital Wallet</option>
+                            <optgroup label="Popular Payment Gateways">
+                                <option value="razorpay">Razorpay (Recommended)</option>
+                                <option value="stripe">Stripe</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="paytm">Paytm</option>
+                            </optgroup>
+                            <optgroup label="Other Methods">
+                                <option value="card">Credit/Debit Card</option>
+                                <option value="upi">UPI</option>
+                                <option value="phonepe">PhonePe</option>
+                                <option value="googlepay">Google Pay</option>
+                                <option value="netbanking">Net Banking</option>
+                                <option value="wallet">Digital Wallet</option>
+                            </optgroup>
                         </select>
                     </div>
 
@@ -236,6 +252,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <!-- Payment Gateway SDKs -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=INR"></script>
     <script src="script.js"></script>
 </body>
 </html>
